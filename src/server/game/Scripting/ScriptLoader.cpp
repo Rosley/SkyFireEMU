@@ -40,7 +40,7 @@ void AddSC_rogue_spell_scripts();
 void AddSC_shaman_spell_scripts();
 void AddSC_warlock_spell_scripts();
 void AddSC_warrior_spell_scripts();
-//void AddSC_mastery_spells();
+void AddSC_mastery_spells();
 void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
 void AddSC_example_spell_scripts();
@@ -721,7 +721,7 @@ void AddSpellScripts()
     AddSC_shaman_spell_scripts();
     AddSC_warlock_spell_scripts();
     AddSC_warrior_spell_scripts();
-    //AddSC_mastery_spells();
+    AddSC_mastery_spells();
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
     AddSC_holiday_spell_scripts();

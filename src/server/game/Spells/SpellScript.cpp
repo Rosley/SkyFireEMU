@@ -16,13 +16,11 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string>
 #include "Spell.h"
 #include "SpellAuras.h"
 #include "SpellScript.h"
 #include "SpellMgr.h"
-#include "SpellAuraEffects.h"
-
-#include <string>
 
 bool _SpellScript::_Validate(SpellInfo const* entry)
 {
@@ -323,29 +321,34 @@ SpellInfo const* SpellScript::GetSpellInfo()
     return m_spell->GetSpellInfo();
 }
 
-WorldLocation const* SpellScript::GetTargetDest()
+WorldLocation const* SpellScript::GetExplTargetDest()
 {
     if (m_spell->m_targets.HasDst())
         return m_spell->m_targets.GetDstPos();
     return NULL;
 }
 
-void SpellScript::SetTargetDest(WorldLocation& loc)
+void SpellScript::SetExplTargetDest(WorldLocation& loc)
 {
     m_spell->m_targets.SetDst(loc);
 }
 
-Unit* SpellScript::GetTargetUnit()
+WorldObject* SpellScript::GetExplTargetWorldObject()
+{
+    return m_spell->m_targets.GetObjectTarget();
+}
+
+Unit* SpellScript::GetExplTargetUnit()
 {
     return m_spell->m_targets.GetUnitTarget();
 }
 
-GameObject* SpellScript::GetTargetGObj()
+GameObject* SpellScript::GetExplTargetGObj()
 {
     return m_spell->m_targets.GetGOTarget();
 }
 
-Item* SpellScript::GetTargetItem()
+Item* SpellScript::GetExplTargetItem()
 {
     return m_spell->m_targets.GetItemTarget();
 }
@@ -406,7 +409,7 @@ GameObject* SpellScript::GetHitGObj()
     return m_spell->gameObjTarget;
 }
 
-WorldLocation const* SpellScript::GetHitDest()
+WorldLocation* SpellScript::GetHitDest()
 {
     if (!IsInEffectHook())
     {
@@ -615,10 +618,6 @@ bool AuraScript::_Validate(SpellInfo const* entry)
         if (!(*itr).GetAffectedEffectsMask(entry))
             sLog->outError("TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectManaShield` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectProcHandler>::iterator itr = OnEffectProc.begin(); itr != OnEffectProc.end();  ++itr)
-        if (!(*itr).GetAffectedEffectsMask(entry))
-            sLog->outError("TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler boud to hook `OnEffectProc` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
-
     return _SpellScript::_Validate(entry);
 }
 
@@ -707,9 +706,9 @@ AuraScript::EffectCalcSpellModHandler::EffectCalcSpellModHandler(AuraEffectCalcS
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectCalcSpellModHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, SpellModifier*& spellMod, SpellInfo const *spellInfo, Unit * target)
+void AuraScript::EffectCalcSpellModHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, SpellModifier*& spellMod)
 {
-    (auraScript->*pEffectHandlerScript)(aurEff, spellMod, spellInfo, target);
+    (auraScript->*pEffectHandlerScript)(aurEff, spellMod);
 }
 
 AuraScript::EffectApplyHandler::EffectApplyHandler(AuraEffectApplicationModeFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName, AuraEffectHandleModes _mode)
@@ -747,17 +746,6 @@ void AuraScript::EffectManaShieldHandler::Call(AuraScript* auraScript, AuraEffec
     (auraScript->*pEffectHandlerScript)(aurEff, dmgInfo, absorbAmount);
 }
 
-AuraScript::EffectProcHandler::EffectProcHandler(AuraEffectProcFnType _pEffectProcScript, uint8 _effIndex, uint16 _effName)
-    : AuraScript::EffectBase(_effIndex, _effName)
-{
-    pEffectProcScript = _pEffectProcScript;
-}
-
-void AuraScript::EffectProcHandler::Call(AuraScript * auraScript, AuraEffect const * _aurEff, Unit* pUnit, Unit *victim, uint32 damage, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, int32 cooldown)
-{
-    (auraScript->*pEffectProcScript)(_aurEff, pUnit, victim, damage, procSpell, procFlag, procExtra, attType, cooldown);
-}
-
 bool AuraScript::_Load(Aura* aura)
 {
     m_aura = aura;
@@ -792,7 +780,6 @@ bool AuraScript::_IsDefaultActionPrevented()
         case AURA_SCRIPT_HOOK_EFFECT_REMOVE:
         case AURA_SCRIPT_HOOK_EFFECT_PERIODIC:
         case AURA_SCRIPT_HOOK_EFFECT_ABSORB:
-        case AURA_SCRIPT_HOOK_EFFECT_PROC:
             return m_defaultActionPrevented;
         default:
             ASSERT(false && "AuraScript::_IsDefaultActionPrevented is called in a wrong place");
@@ -807,7 +794,7 @@ void AuraScript::PreventDefaultAction()
         case AURA_SCRIPT_HOOK_EFFECT_APPLY:
         case AURA_SCRIPT_HOOK_EFFECT_REMOVE:
         case AURA_SCRIPT_HOOK_EFFECT_PERIODIC:
-        case AURA_SCRIPT_HOOK_EFFECT_PROC:
+        case AURA_SCRIPT_HOOK_EFFECT_ABSORB:
             m_defaultActionPrevented = true;
             break;
         default:
@@ -989,7 +976,6 @@ Unit* AuraScript::GetTarget() const
         case AURA_SCRIPT_HOOK_EFFECT_AFTER_ABSORB:
         case AURA_SCRIPT_HOOK_EFFECT_MANASHIELD:
         case AURA_SCRIPT_HOOK_EFFECT_AFTER_MANASHIELD:
-        case AURA_SCRIPT_HOOK_EFFECT_PROC:
             return m_auraApplication->GetTarget();
         default:
             sLog->outError("TSCR: Script: `%s` Spell: `%u` AuraScript::GetTarget called in a hook in which the call won't have effect!", m_scriptName->c_str(), m_scriptSpellId);
@@ -1001,50 +987,4 @@ Unit* AuraScript::GetTarget() const
 AuraApplication const* AuraScript::GetTargetApplication() const
 {
     return m_auraApplication;
-}
-
-uint32 MasteryScript::GetMasteryBaseAmount()
-{
-    if (dummyEffectIndex >= 0 && dummyEffectIndex < MAX_SPELL_EFFECTS)
-    {
-        if (SpellInfo const* spellInfo = GetAura()->GetSpellInfo())
-            return spellInfo->Effects[dummyEffectIndex].BasePoints ? spellInfo->Effects[dummyEffectIndex].BasePoints : defaultBaseAmount;
-        // if (AuraEffect* effect = GetAura()->GetEffect(dummyEffectIndex))
-        //    return effect->GetBaseAmount()/*GetAmount()*/;
-    }
-    return defaultBaseAmount;
-}
-
-void MasteryScript::CalcAmount(AuraEffect const* aurEff, int32& amount, bool& canBeRecalculated)
-{
-    if (Unit* caster = GetCaster())
-    {
-        if (Player* player = caster->ToPlayer())
-        {
-            uint32 baseAmount = GetMasteryBaseAmount();
-            float mastery = player->GetMasteryPoints();
-            int32 newAmount = int32(mastery * baseAmount / 100.0f);
-            if (amount != newAmount)
-            {
-                amount = newAmount;
-                sLog->outDetail("Mastery spell %u eff %u: mastery %.2f, amount %u, bonus %d", aurEff->GetId(), aurEff->GetEffIndex(), mastery, baseAmount, newAmount);
-            }
-        }
-    }
-    canBeRecalculated = true;
-}
-
-void MasteryScript::Register()
-{
-    for (uint8 i = EFFECT_0; i < MAX_SPELL_EFFECTS; i++)
-    {
-        if (masteryAuras[i].auraType != SPELL_AURA_NONE)
-        {
-            sLog->outDetail("MasteryScript::Register mastery aura %u : %u", i, masteryAuras[i].auraType);
-            DoEffectCalcAmount += AuraEffectCalcAmountFn(MasteryScript::CalcAmount, i, masteryAuras[i].auraType);
-            DoEffectCalcSpellMod += AuraEffectCalcSpellModFn(MasteryScript::CalcSpellMod, i, masteryAuras[i].auraType);
-            if (masteryAuras[i].handleProc)
-                OnEffectProc += AuraEffectProcFn(MasteryScript::OnProc, i, masteryAuras[i].auraType);
-        }
-    }
 }

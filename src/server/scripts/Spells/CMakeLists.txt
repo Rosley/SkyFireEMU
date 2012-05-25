@@ -24,7 +24,7 @@ set(scripts_STAT_SRCS
   Spells/spell_mage.cpp
   Spells/spell_paladin.cpp
   Spells/spell_item.cpp
-  Spells/mastery_spells.cpp
+  #Spells/mastery_spells.cpp
   Spells/spell_holiday.cpp
 )
 

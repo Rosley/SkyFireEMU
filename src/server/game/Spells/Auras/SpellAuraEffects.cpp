@@ -932,7 +932,7 @@ void AuraEffect::CalculateSpellMod(SpellInfo const *spellInfo, Unit * target)
         default:
             break;
     }
-    GetBase()->CallScriptEffectCalcSpellModHandlers(const_cast<AuraEffect const*>(this), m_spellmod, spellInfo, target);
+    GetBase()->CallScriptEffectCalcSpellModHandlers(const_cast<AuraEffect const*>(this), m_spellmod);
 }
 
 void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)

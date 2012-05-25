@@ -399,6 +399,7 @@ enum AuraScriptHookType
     AURA_SCRIPT_HOOK_EFFECT_MANASHIELD,
     AURA_SCRIPT_HOOK_EFFECT_AFTER_MANASHIELD,
     AURA_SCRIPT_HOOK_CHECK_AREA_TARGET,
+    AURA_SCRIPT_HOOK_EFFECT_PROC,
     AURA_SCRIPT_HOOK_DISPEL,
     AURA_SCRIPT_HOOK_AFTER_DISPEL,
     /*AURA_SCRIPT_HOOK_APPLY,
@@ -422,8 +423,9 @@ class AuraScript : public _SpellScript
         typedef void(CLASSNAME::*AuraEffectUpdatePeriodicFnType)(AuraEffect*); \
         typedef void(CLASSNAME::*AuraEffectCalcAmountFnType)(AuraEffect const*, int32 &, bool &); \
         typedef void(CLASSNAME::*AuraEffectCalcPeriodicFnType)(AuraEffect const*, bool &, int32 &); \
-        typedef void(CLASSNAME::*AuraEffectCalcSpellModFnType)(AuraEffect const*, SpellModifier* &); \
+        typedef void(CLASSNAME::*AuraEffectCalcSpellModFnType)(AuraEffect const*, SpellModifier* &, SpellInfo const *, Unit *); \
         typedef void(CLASSNAME::*AuraEffectAbsorbFnType)(AuraEffect*, DamageInfo &, uint32 &); \
+        typedef void(CLASSNAME::*AuraEffectProcFnType)(AuraEffect const *, Unit *, Unit *, uint32, SpellInfo const*, uint32, uint32, WeaponAttackType, int32); \
 
         AURASCRIPT_FUNCTION_TYPE_DEFINES(AuraScript)
 
@@ -486,7 +488,7 @@ class AuraScript : public _SpellScript
         {
             public:
                 EffectCalcSpellModHandler(AuraEffectCalcSpellModFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName);
-                void Call(AuraScript* auraScript, AuraEffect const* aurEff, SpellModifier* & spellMod);
+                void Call(AuraScript* auraScript, AuraEffect const* aurEff, SpellModifier* & spellMod, SpellInfo const *spellInfo, Unit * target);
             private:
                 AuraEffectCalcSpellModFnType pEffectHandlerScript;
         };
@@ -506,6 +508,14 @@ class AuraScript : public _SpellScript
                 void Call(AuraScript* auraScript, AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount);
             private:
                 AuraEffectAbsorbFnType pEffectHandlerScript;
+        };
+        class EffectProcHandler : public EffectBase
+        {
+        public:
+            EffectProcHandler(AuraEffectProcFnType _pEffectProcScript, uint8 _effIndex, uint16 _effName);
+            void Call(AuraScript * auraScript, AuraEffect const * _aurEff, Unit* pUnit, Unit *victim, uint32 damage, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, int32 cooldown);
+        private:
+            AuraEffectProcFnType pEffectProcScript;
         };
         class EffectManaShieldHandler : public EffectBase
         {
@@ -527,6 +537,7 @@ class AuraScript : public _SpellScript
         class EffectApplyHandlerFunction : public AuraScript::EffectApplyHandler { public: EffectApplyHandlerFunction(AuraEffectApplicationModeFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName, AuraEffectHandleModes _mode) : AuraScript::EffectApplyHandler((AuraScript::AuraEffectApplicationModeFnType)_pEffectHandlerScript, _effIndex, _effName, _mode) {} }; \
         class EffectAbsorbFunction : public AuraScript::EffectAbsorbHandler { public: EffectAbsorbFunction(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex) : AuraScript::EffectAbsorbHandler((AuraScript::AuraEffectAbsorbFnType)_pEffectHandlerScript, _effIndex) {} }; \
         class EffectManaShieldFunction : public AuraScript::EffectManaShieldHandler { public: EffectManaShieldFunction(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex) : AuraScript::EffectManaShieldHandler((AuraScript::AuraEffectAbsorbFnType)_pEffectHandlerScript, _effIndex) {} }; \
+        class EffectProcHandlerFunction : public AuraScript::EffectProcHandler { public: EffectProcHandlerFunction(AuraEffectProcFnType _pEffectProcScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectProcHandler((AuraScript::AuraEffectProcFnType)_pEffectProcScript, _effIndex, _effName) {} }; \
 
         #define PrepareAuraScript(CLASSNAME) AURASCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) AURASCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME)
 
@@ -625,7 +636,7 @@ class AuraScript : public _SpellScript
 
         // executed when aura effect calculates spellmod
         // example: DoEffectCalcSpellMod += AuraEffectCalcSpellModFn(class::function, EffectIndexSpecifier, EffectAuraNameSpecifier);
-        // where function is: void function (AuraEffect const* aurEff, SpellModifier*& spellMod);
+        // where function is: void function (AuraEffect const* aurEff, SpellModifier*& spellMod, SpellInfo const *spellInfo, Unit * target);
         HookList<EffectCalcSpellModHandler> DoEffectCalcSpellMod;
         #define AuraEffectCalcSpellModFn(F, I, N) EffectCalcSpellModHandlerFunction(&F, I, N)
 
@@ -645,6 +656,12 @@ class AuraScript : public _SpellScript
         // where function is: void function (AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount);
         HookList<EffectManaShieldHandler> OnEffectManaShield;
         #define AuraEffectManaShieldFn(F, I) EffectManaShieldFunction(&F, I)
+
+        // executed when aura effect proc event occurs
+        // example: OnEffectProc += AuraEffectProcFn(class::function, EffectIndexSpecifier, EffectAuraNameSpecifier);
+        // where function is: void function (AuraEffect const * aurEff, Unit* pUnit, Unit *victim, uint32 damage, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, int32 cooldown);
+        HookList<EffectProcHandler> OnEffectProc;
+        #define AuraEffectProcFn(F, I, N) EffectProcHandlerFunction(&F, I, N)
 
         // executed after mana shield aura effect reduced damage to target - absorbAmount is real amount absorbed by aura
         // example: AfterEffectManaShield += AuraEffectAbsorbFn(class::function, EffectIndexSpecifier);
@@ -731,6 +748,50 @@ class AuraScript : public _SpellScript
         Unit* GetTarget() const;
         // returns AuraApplication object of currently processed target
         AuraApplication const* GetTargetApplication() const;
+};
+
+// Mastery helper class
+class MasteryScript : public AuraScript
+{
+    PrepareAuraScript(MasteryScript);
+
+protected:
+    struct MasteryAuraData
+    {
+        AuraType auraType;
+        bool handleProc;
+    };
+
+    MasteryAuraData masteryAuras[MAX_SPELL_EFFECTS];
+    int32 dummyEffectIndex;
+    uint32 defaultBaseAmount;
+
+public:
+    MasteryScript(AuraType auraType = SPELL_AURA_NONE, SpellEffIndex _dummyEffIndex = EFFECT_1, uint32 baseAmount = 0)
+        : dummyEffectIndex(_dummyEffIndex), defaultBaseAmount(baseAmount)
+    {
+        SetMasteryAura(EFFECT_0, auraType);
+        SetMasteryAura(EFFECT_1, SPELL_AURA_NONE);
+        SetMasteryAura(EFFECT_2, SPELL_AURA_NONE);
+    }
+
+    void SetMasteryAura(SpellEffIndex effIndex, AuraType auraType, bool handleProc = false)
+    {
+        masteryAuras[effIndex].auraType = auraType;
+        masteryAuras[effIndex].handleProc = handleProc;
+    }
+
+    void SetMasteryBaseAmount(int32 effIndex = EFFECT_1, uint32 baseAmount = 0)
+    {
+        dummyEffectIndex = effIndex;
+        defaultBaseAmount = baseAmount;
+    }
+
+    virtual uint32 GetMasteryBaseAmount();
+    virtual void OnProc(AuraEffect const * aurEff, Unit* pUnit, Unit *victim, uint32 damage, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, int32 cooldown) { }
+    virtual void CalcAmount(AuraEffect const* /*aurEffect*/, int32& /*amount*/, bool& /*canBeRecalculated*/);
+    virtual void CalcSpellMod(AuraEffect const * /*aurEff*/, SpellModifier *& /*spellMod*/, SpellInfo const * /*spellInfo*/, Unit * /*target*/) { }
+    virtual void Register();
 };
 
 //

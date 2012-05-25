@@ -487,15 +487,15 @@ enum BaseModType
     PCT_MOD
 };
 
-#define MOD_END (PCT_MOD+1)
+#define MOD_END (PCT_MOD + 1)
 
 enum DeathState
 {
-    ALIVE       = 0,
-    JUST_DIED   = 1,
-    CORPSE      = 2,
-    DEAD        = 3,
-    JUST_ALIVED = 4,
+    ALIVE           = 0,
+    JUST_DIED       = 1,
+    CORPSE          = 2,
+    DEAD            = 3,
+    JUST_RESPAWNED  = 4,
 };
 
 enum UnitState

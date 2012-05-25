@@ -12888,9 +12888,7 @@ void Unit::setDeathState(DeathState s)
 {
     // death state needs to be updated before RemoveAllAurasOnDeath() calls HandleChannelDeathItem(..) so that
     // it can be used to check creation of death items (such as soul shards).
-    _deathState = s;
-
-    if (s != ALIVE && s != JUST_ALIVED)
+    if (s != ALIVE && s != JUST_RESPAWNED)
     {
         CombatStop();
         DeleteThreatList();
@@ -12921,8 +12919,12 @@ void Unit::setDeathState(DeathState s)
         SetHealth(0);
         SetPower(getPowerType(), 0);
     }
-    else if (s == JUST_ALIVED)
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
+    else if (s == JUST_RESPAWNED)
+    {
+         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinning for creature and player (at battleground)
+    }
+
+    _deathState = s;
 }
 
 /*########################################

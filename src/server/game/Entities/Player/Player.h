@@ -846,6 +846,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS  = 31,
     PLAYER_LOGIN_QUERY_LOADTALENTBRANCHSPECS    = 32,
     PLAYER_LOGIN_QUERY_LOAD_CURRENCY            = 33,
+    PLAYER_LOGIN_QUERY_LOAD_CP_WEEK_CAP         = 34,
     MAX_PLAYER_LOGIN_QUERY,
 };
 
@@ -1535,7 +1536,7 @@ class Player : public Unit, public GridObject<Player>
         void SendQuestTimerFailed(uint32 quest_id);
         void SendCanTakeQuestResponse(uint32 msg) const;
         void SendQuestConfirmAccept(Quest const* quest, Player* pReceiver);
-        void SendPushToPartyResponse(Player *player, uint32 msg);
+        void SendPushToPartyResponse(Player* player, uint32 msg);
         void SendQuestUpdateAddItem(Quest const* quest, uint32 item_idx, uint16 count);
         void SendQuestUpdateAddCreatureOrGo(Quest const* quest, uint64 guid, uint32 creatureOrGO_idx, uint16 old_count, uint16 add_count);
         void SendQuestUpdateAddPlayer(Quest const* quest, uint16 old_count, uint16 add_count);
@@ -2183,9 +2184,9 @@ class Player : public Unit, public GridObject<Player>
         void SendNotifyLootItemRemoved(uint8 lootSlot);
         void SendNotifyLootMoneyRemoved();
 
-        ///protected:
         uint32 _regenTimerCount;
         uint32 _holyPowerRegenTimerCount; // Holy power updates ticks at every 10secs.
+
 
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/
@@ -2649,6 +2650,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadInstanceTimeRestrictions(PreparedQueryResult result);
         void _LoadTalentBranchSpecs(PreparedQueryResult result);
         void _LoadCurrency(PreparedQueryResult result);
+        void _LoadConquestPointsWeekCap(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2707,8 +2709,12 @@ class Player : public Unit, public GridObject<Player>
         Item* _items[PLAYER_SLOTS_COUNT];
         uint32 _currentBuybackSlot;
 
-        PlayerCurrenciesMap _currencies;
+        PlayerCurrenciesMap m_currencies;
         uint32 _GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const;
+        uint32 _GetCurrencyTotalCap(const CurrencyTypesEntry* currency) const;
+
+        uint16 _maxWeekRating[CP_SOURCE_MAX];
+        uint16 _conquestPointsWeekCap[CP_SOURCE_MAX]; // without *PLAYER_CURRENCY_PRECISION!
 
         uint16 _maxWeekRating[CP_SOURCE_MAX];
         uint16 _conquestPointsWeekCap[CP_SOURCE_MAX]; // without *PLAYER_CURRENCY_PRECISION!

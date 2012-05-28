@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2012 Project SkyFire <http://www.projectskyfire.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -50,12 +51,11 @@ namespace Movement
         return MOVE_RUN;
     }
 
-    // void MoveSplineInit::Launch()
     int32 MoveSplineInit::Launch()
     {
         MoveSpline& move_spline = *unit.movespline;
 
-        Location real_position(unit.GetPositionX(),unit.GetPositionY(),unit.GetPositionZ(),unit.GetOrientation());
+        Location real_position(unit.GetPositionX(), unit.GetPositionY(), unit.GetPositionZ(), unit.GetOrientation());
         // there is a big chane that current position is unknown if current state is not finalized, need compute it
         // this also allows calculate spline position and update map position in much greater intervals
         if (!move_spline.Finalized())
@@ -77,22 +77,19 @@ namespace Movement
         else
             moveFlags &= ~MOVEMENTFLAG_WALKING;
 
-        moveFlags |= (MOVEMENTFLAG_SPLINE_ENABLED|MOVEMENTFLAG_FORWARD);
+        moveFlags |= (MOVEMENTFLAG_SPLINE_ENABLED | MOVEMENTFLAG_FORWARD);
 
-        if (args.velocity == 0.f)
+        if (fabs(args.velocity) < M_NULL_F)
             args.velocity = unit.GetSpeed(SelectSpeedType(moveFlags));
 
         if (!args.Validate())
             return 0;
 
-        if (moveFlags & MOVEMENTFLAG_ROOT)
-            moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
-
         unit._movementInfo.SetMovementFlags((MovementFlags)moveFlags);
         move_spline.Initialize(args);
 
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
-        data.append(unit.GetPackGUID());
+        data << unit.GetPackGUID();
         PacketBuilder::WriteMonsterMove(move_spline, data);
         unit.SendMessageToSet(&data, true);
 
@@ -103,19 +100,18 @@ namespace Movement
     {
         // mix existing state into new
         args.flags.walkmode = unit._movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING);
-        args.flags.flying = unit._movementInfo.HasMovementFlag((MovementFlags)(MOVEMENTFLAG_FLYING|MOVEMENTFLAG_LEVITATING));
+        args.flags.flying = unit._movementInfo.HasMovementFlag((MovementFlags)(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING));
     }
 
     void MoveSplineInit::SetFacing(const Unit * target)
     {
         args.flags.EnableFacingTarget();
-        //args.facing.target = target->GetObjectGuid().GetRawValue();
         args.facing.target = target->GetUInt64Value(OBJECT_FIELD_GUID);
     }
 
     void MoveSplineInit::SetFacing(float angle)
     {
-        args.facing.angle = G3D::wrap(angle, 0.f, (float)G3D::twoPi());
+        args.facing.angle = G3D::wrap(angle, 0.0f, (float)G3D::twoPi());
         args.flags.EnableFacingAngle();
     }
 }

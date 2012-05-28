@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2012 Project SkyFire <http://www.projectskyfire.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,7 +20,6 @@
 #ifndef SKYFIRE_MOVESPLINEINIT_H
 #define SKYFIRE_MOVESPLINEINIT_H
 
-#include "MoveSplineInit.h"
 #include "MoveSplineInitArgs.h"
 #include "PathFinderMovementGenerator.h"
 
@@ -29,10 +29,10 @@ namespace Movement
 {
     enum AnimType
     {
-        ToGround    = 0, // 460 = ToGround, index of AnimationData.dbc
-        FlyToFly    = 1, // 461 = FlyToFly?
-        ToFly       = 2, // 458 = ToFly
-        FlyToGround = 3, // 463 = FlyToGround
+        ToGround        = 0, // 460 = ToGround, index of AnimationData.dbc
+        FlyToFly        = 1, // 461 = FlyToFly?
+        ToFly           = 2, // 458 = ToFly
+        FlyToGround     = 3, // 463 = FlyToGround
     };
 
     /*  Initializes and launches spline movement
@@ -43,9 +43,9 @@ namespace Movement
 
         explicit MoveSplineInit(Unit& m);
 
-        /*  Final pass of initialization that launches spline movement.
-        * @return duration - estimated travel time
-        */
+        /* Final pass of initialization that launches spline movement.
+         * @return duration - estimated travel time
+         */
         int32 Launch();
 
         /* Adds movement by parabolic trajectory
@@ -75,9 +75,6 @@ namespace Movement
 
         /* Initializes simple A to B mition, A is current unit's position, B is destination
          */
-        // void MoveTo(const Vector3& destination);
-        //void MoveTo(float x, float y, float z);
-
         void MoveTo(const Vector3& destination, bool generatePath = false, bool forceDestination = false);
         void MoveTo(float x, float y, float z, bool generatePath = false, bool forceDestination = false);
 
@@ -109,6 +106,11 @@ namespace Movement
          */
         void SetOrientationFixed(bool enable);
 
+        /* Enables transport enter/exit modes
+         */
+        void SetTransportEnter();
+        void SetTransportExit();
+
         /* Sets the velocity (in case you want to have custom movement velocity)
          * if no set, speed will be selected based on unit's speeds and current movement mode
          * Has no effect if falling mode enabled
@@ -124,33 +126,29 @@ namespace Movement
         Unit&  unit;
     };
 
-    inline void MoveSplineInit::SetFly() { args.flags.EnableFlying();}
+    inline void MoveSplineInit::SetFly()             { args.flags.EnableFlying();}
     inline void MoveSplineInit::SetWalk(bool enable) { args.flags.walkmode = enable;}
-    inline void MoveSplineInit::SetSmooth() { args.flags.EnableCatmullRom();}
-    inline void MoveSplineInit::SetCyclic() { args.flags.cyclic = true;}
-    inline void MoveSplineInit::SetFall() { args.flags.EnableFalling();}
-    inline void MoveSplineInit::SetVelocity(float vel){  args.velocity = vel;}
-    inline void MoveSplineInit::SetOrientationInversed() { args.flags.orientationInversed = true;}
+    inline void MoveSplineInit::SetSmooth()          { args.flags.EnableCatmullRom();}
+    inline void MoveSplineInit::SetCyclic()          { args.flags.cyclic = true;}
+    inline void MoveSplineInit::SetFall()            { args.flags.EnableFalling();}
+    inline void MoveSplineInit::SetVelocity(float vel)           { args.velocity = vel;}
+    inline void MoveSplineInit::SetOrientationInversed()         { args.flags.orientationInversed = true;}
     inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable;}
 
     inline void MoveSplineInit::MovebyPath(const PointsArray& controls, int32 path_offset)
     {
         args.path_Idx_offset = path_offset;
-        args.path.assign(controls.begin(),controls.end());
+        args.path.assign(controls.begin(), controls.end());
     }
 
     inline void MoveSplineInit::MoveTo(float x, float y, float z, bool generatePath, bool forceDestination)
     {
         Vector3 v(x, y, z);
-        MoveTo(v);
         MoveTo(v, generatePath, forceDestination);
     }
 
     inline void MoveSplineInit::MoveTo(const Vector3& dest, bool generatePath, bool forceDestination)
     {
-       //  args.path_Idx_offset = 0;
-       //  args.path.resize(2);
-       //  args.path[1] = dest;
         if (generatePath)
         {
             PathFinderMovementGenerator path(&unit);
@@ -163,7 +161,7 @@ namespace Movement
             args.path.resize(2);
             args.path[1] = dest;
         }
-     }
+    }
 
     inline void MoveSplineInit::SetParabolic(float amplitude, float time_shift)
     {
@@ -174,7 +172,7 @@ namespace Movement
 
     inline void MoveSplineInit::SetAnimation(AnimType anim)
     {
-        args.time_perc = 0.f;
+        args.time_perc = 0.0f;
         args.flags.EnableAnimation((uint8)anim);
     }
 
@@ -184,6 +182,16 @@ namespace Movement
         args.facing.f.y = spot.y;
         args.facing.f.z = spot.z;
         args.flags.EnableFacingPoint();
+    }
+
+    inline void MoveSplineInit::SetTransportEnter()
+    {
+        args.flags.EnableTransport();
+    }
+
+    inline void MoveSplineInit::SetTransportExit()
+    {
+        args.flags.EnableTransportExit();
     }
 }
 #endif // SKYFIRE_MOVESPLINEINIT_H

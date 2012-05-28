@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2012 Project SkyFire <http://www.projectskyfire.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +18,6 @@
  */
 
 #include "MoveSplineFlag.h"
-
 #include <math.h>
 #include <string>
 
@@ -26,8 +26,8 @@ namespace Movement
     double gravity = 19.29110527038574;
 
     /// Velocity bounds that makes fall speed limited
-    float terminalVelocity = 60.148003f;
-    float terminalSavefallVelocity = 7.f;
+    float terminalVelocity          = 60.148003f;
+    float terminalSavefallVelocity  = 7.0f;
 
     const float terminal_length = float(terminalVelocity * terminalVelocity) / (2.f * gravity);
     const float terminal_savefall_length = (terminalSavefallVelocity * terminalSavefallVelocity) / (2.f * gravity);
@@ -35,23 +35,23 @@ namespace Movement
 
     float computeFallTime(float path_length, bool isSafeFall)
     {
-        if (path_length < 0.f)
-            return 0.f;
+        if (path_length < 0.0f)
+            return 0.0f;
 
         float time;
-        if ( isSafeFall )
+        if (isSafeFall)
         {
             if (path_length >= terminal_savefall_length)
                 time = (path_length - terminal_savefall_length)/terminalSavefallVelocity + terminalSavefallVelocity/gravity;
             else
-                time = sqrtf(2.f * path_length/gravity);
+                time = sqrtf(2.0f * path_length/gravity);
         }
         else
         {
             if (path_length >= terminal_length)
                 time = (path_length - terminal_length)/terminalVelocity + terminalFallTime;
             else
-                time = sqrtf(2.f * path_length/gravity);
+                time = sqrtf(2.0f * path_length/gravity);
         }
 
         return time;
@@ -62,20 +62,19 @@ namespace Movement
         float termVel;
         float result;
 
-        if ( isSafeFall )
+        if (isSafeFall)
             termVel = terminalSavefallVelocity;
         else
             termVel = terminalVelocity;
 
-        if ( start_velocity > termVel )
+        if (start_velocity > termVel)
             start_velocity = termVel;
 
         float terminal_time = terminalFallTime - start_velocity / gravity; // the time that needed to reach terminalVelocity
 
-        if ( t_passed > terminal_time )
+        if (t_passed > terminal_time)
         {
-            result = terminalVelocity*(t_passed - terminal_time) +
-                start_velocity*terminal_time + gravity*terminal_time*terminal_time*0.5f;
+            result = terminalVelocity*(t_passed - terminal_time) + start_velocity*terminal_time + gravity*terminal_time*terminal_time*0.5f;
         }
         else
             result = t_passed * (start_velocity + t_passed * gravity * 0.5f);
@@ -183,7 +182,7 @@ namespace Movement
         STR(Unknown6     ),// 0x01000000,
         STR(Unknown7     ),// 0x02000000,
         STR(Unknown8     ),// 0x04000000,
-        STR(OrientationInversed ),// 0x08000000,           // Appears With Runmode Flag, Nodes ),// 1, Handles Orientation
+        STR(OrientationInversed ),// 0x08000000,    // Appears With Runmode Flag, Nodes ),// 1, Handles Orientation
         STR(Unknown10    ),// 0x10000000,
         STR(Unknown11    ),// 0x20000000,
         STR(Unknown12    ),// 0x40000000,
@@ -200,10 +199,10 @@ namespace Movement
         }
     }
 
-    std::string MoveSplineFlag::ToString() const
+    std::string MoveSplineFlag::ToString()const
     {
         std::string str;
-        print_flags(raw(),g_SplineFlag_names, str);
+        print_flags(raw(), g_SplineFlag_names, str);
         return str;
     }
 }

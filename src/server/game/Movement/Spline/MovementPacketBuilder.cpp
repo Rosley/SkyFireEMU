@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2012 Project SkyFire <http://www.projectskyfire.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,16 +35,23 @@ namespace Movement
 
     enum MonsterMoveType
     {
-        MonsterMoveNormal       = 0,
-        MonsterMoveStop         = 1,
-        MonsterMoveFacingSpot   = 2,
-        MonsterMoveFacingTarget = 3,
-        MonsterMoveFacingAngle  = 4
+        MonsterMoveNormal           = 0,
+        MonsterMoveStop             = 1,
+        MonsterMoveFacingSpot       = 2,
+        MonsterMoveFacingTarget     = 3,
+        MonsterMoveFacingAngle      = 4
     };
 
     void PacketBuilder::WriteCommonMonsterMovePart(const MoveSpline& move_spline, WorldPacket& data)
     {
         MoveSplineFlag splineflags = move_spline.splineflags;
+
+        /*if (mov.IsBoarded())
+        {
+            data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
+            data << mov.GetTransport()->Owner.GetPackGUID();
+            data << int8(mov.m_unused.transport_seat);
+        }*/
 
         data << uint8(0);
         data << move_spline.spline.getPoint(move_spline.spline.first());
@@ -51,28 +59,28 @@ namespace Movement
 
         switch (splineflags & MoveSplineFlag::Mask_Final_Facing)
         {
-        default:
-            data << uint8(MonsterMoveNormal);
-            break;
-        case MoveSplineFlag::Final_Target:
-            data << uint8(MonsterMoveFacingTarget);
-            data << move_spline.facing.target;
-            break;
-        case MoveSplineFlag::Final_Angle:
-            data << uint8(MonsterMoveFacingAngle);
-            data << move_spline.facing.angle;
-            break;
-        case MoveSplineFlag::Final_Point:
-            data << uint8(MonsterMoveFacingSpot);
-            data << move_spline.facing.f.x << move_spline.facing.f.y << move_spline.facing.f.z;
-            break;
+            default:
+                data << uint8(MonsterMoveNormal);
+                break;
+            case MoveSplineFlag::Final_Target:
+                data << uint8(MonsterMoveFacingTarget);
+                data << move_spline.facing.target;
+                break;
+            case MoveSplineFlag::Final_Angle:
+                data << uint8(MonsterMoveFacingAngle);
+                data << move_spline.facing.angle;
+                break;
+            case MoveSplineFlag::Final_Point:
+                data << uint8(MonsterMoveFacingSpot);
+                data << move_spline.facing.f.x << move_spline.facing.f.y << move_spline.facing.f.z;
+                break;
         }
 
         // add fake Enter_Cycle flag - needed for client-side cyclic movement (client will erase first spline vertex after first cycle done)
         splineflags.enter_cycle = move_spline.isCyclic();
         data << uint32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move);
 
-        if (splineflags.animation && splineflags.animation2)
+        if (splineflags.animation)
         {
             data << splineflags.getAnimationId();
             data << move_spline.effect_start_time;
@@ -96,7 +104,7 @@ namespace Movement
         data << real_path[last_idx];   // destination
         if (last_idx > 1)
         {
-            Vector3 middle = (real_path[0] + real_path[last_idx]) / 2.f;
+            Vector3 middle = (real_path[0] + real_path[last_idx]) / 2.0f;
             Vector3 offset;
             // first and last points already appended
             for (uint32 i = 1; i < last_idx; ++i)
@@ -128,7 +136,7 @@ namespace Movement
 
         const Spline<int32>& spline = move_spline.spline;
         MoveSplineFlag splineflags = move_spline.splineflags;
-        if (splineflags & MoveSplineFlag::UnCompressedPath)
+        if (splineflags & MoveSplineFlag::Mask_CatmullRom)
         {
             if (splineflags.cyclic)
                 WriteCatmullRomCyclicPath(spline, data);
@@ -166,8 +174,8 @@ namespace Movement
             data << move_spline.Duration();
             data << move_spline.GetId();
 
-            data << float(1.f);                             // splineInfo.duration_mod; added in 3.1
-            data << float(1.f);                             // splineInfo.duration_mod_next; added in 3.1
+            data << float(1.0f);                             // splineInfo.duration_mod; added in 3.1
+            data << float(1.0f);                             // splineInfo.duration_mod_next; added in 3.1
 
             data << move_spline.vertical_acceleration;      // added in 3.1
             data << move_spline.effect_start_time;          // added in 3.1

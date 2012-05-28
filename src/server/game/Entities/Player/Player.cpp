@@ -7439,7 +7439,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
     GetSession()->SendPacket(&data);
 
     // add honor points
-    ModifyCurrency(CURRENCY_TYPE_HONOR_POINTS, int32(honor)* 2.4);
+    ModifyCurrency(CURRENCY_TYPE_HONOR_POINTS, int32(honor));
 
     if (InBattleground() && honor > 0)
     {
@@ -18839,28 +18839,6 @@ void Player::_LoadConquestPointsWeekCap(PreparedQueryResult result)
     }
 }
 
-void Player::_LoadConquestPointsWeekCap(PreparedQueryResult result)
-{
-    //           0         1            2
-    // "SELECT source, maxWeekRating, weekCap FROM character_cp_weekcap WHERE guid = ?"
-
-    if (result)
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-
-            uint16 source = fields[0].GetUInt16();
-            if (source != CP_SOURCE_ARENA && source != CP_SOURCE_RATED_BG)
-                continue;
-
-            _maxWeekRating[source] = fields[1].GetUInt16();
-            _conquestPointsWeekCap[source] = fields[2].GetUInt16();
-        }
-        while(result->NextRow());
-    }
-}
-
 void Player::_LoadSeasonalQuestStatus(PreparedQueryResult result)
 {
     _seasonalquests.clear();
@@ -20151,7 +20129,6 @@ void Player::_SaveConquestPointsWeekCap()
     }
 }
 
-
 // save player stats -- only for external usage
 // real stats will be recalculated on player login
 void Player::_SaveStats(SQLTransaction& trans)
@@ -21143,7 +21120,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
             (node->z - GetPositionZ())*(node->z - GetPositionZ()) >
             (2*INTERACTION_DISTANCE)*(2*INTERACTION_DISTANCE)*(2*INTERACTION_DISTANCE))
         {
-            GetSession()->SendActivateTaxiReply(ERR_TAXIPLAYERBUSY);
+            GetSession()->SendActivateTaxiReply(ERR_TAXITOOFARAWAY);
             return false;
         }
     }
@@ -23172,9 +23149,9 @@ bool Player::GetBGAccessByLevel(BattlegroundTypeId bgTypeId) const
     return true;
 }
 
-float Player::GetReputationPriceDiscount(Creature const* pCreature) const
+float Player::GetReputationPriceDiscount(Creature const* creature) const
 {
-    FactionTemplateEntry const* vendor_faction = pCreature->getFactionTemplateEntry();
+    FactionTemplateEntry const* vendor_faction = creature->getFactionTemplateEntry();
     if (!vendor_faction || !vendor_faction->faction)
         return 1.0f;
 

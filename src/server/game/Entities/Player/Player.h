@@ -1566,7 +1566,6 @@ class Player : public Unit, public GridObject<Player>
         static bool   LoadPositionFromDB(uint32& mapid, float& x, float& y, float& z, float& o, bool& in_flight, uint64 guid);
 
         static bool IsValidGender(uint8 Gender) { return Gender <= GENDER_FEMALE; }
-        void _LoadConquestPointsWeekCap(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2187,7 +2186,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 _regenTimerCount;
         uint32 _holyPowerRegenTimerCount; // Holy power updates ticks at every 10secs.
 
-
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/
         /*********************************************************/
@@ -2716,8 +2714,6 @@ class Player : public Unit, public GridObject<Player>
         uint16 _maxWeekRating[CP_SOURCE_MAX];
         uint16 _conquestPointsWeekCap[CP_SOURCE_MAX]; // without *PLAYER_CURRENCY_PRECISION!
 
-        uint16 _maxWeekRating[CP_SOURCE_MAX];
-        uint16 _conquestPointsWeekCap[CP_SOURCE_MAX]; // without *PLAYER_CURRENCY_PRECISION!
         std::vector<Item*> m_itemUpdateQueue;
         bool _itemUpdateQueueBlocked;
 

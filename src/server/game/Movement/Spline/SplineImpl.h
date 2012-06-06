@@ -19,8 +19,7 @@
 
 namespace Movement
 {
-template<typename length_type>
-void Spline<length_type>::evaluate_percent(float t, Vector3 & c) const
+template<typename length_type> void Spline<length_type>::evaluate_percent( float t, Vector3 & c ) const
 {
     index_type Index;
     float u;
@@ -28,8 +27,7 @@ void Spline<length_type>::evaluate_percent(float t, Vector3 & c) const
     evaluate_percent(Index, u, c);
 }
 
-template<typename length_type>
-void Spline<length_type>::evaluate_derivative(float t, Vector3& hermite) const
+template<typename length_type> void Spline<length_type>::evaluate_derivative(float t, Vector3& hermite) const
 {
     index_type Index;
     float u;
@@ -64,8 +62,7 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
     return i;
 }
 
-template<typename length_type>
-void Spline<length_type>::computeIndex(float t, index_type& index, float& u) const
+template<typename length_type> void Spline<length_type>::computeIndex(float t, index_type& index, float& u) const
 {
     ASSERT(t >= 0.f && t <= 1.f);
     length_type length_ = t * length();
@@ -74,14 +71,13 @@ void Spline<length_type>::computeIndex(float t, index_type& index, float& u) con
     u = (length_ - length(index)) / (float)length(index, index+1);
 }
 
-template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds(float t) const
+template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds( float t ) const
 {
     ASSERT(t >= 0.f && t <= 1.f);
     return computeIndexInBounds(t * length());
 }
 
-template<typename length_type>
-void Spline<length_type>::initLengths()
+template<typename length_type> void Spline<length_type>::initLengths()
 {
     index_type i = index_lo;
     length_type length = 0;
@@ -93,11 +89,11 @@ void Spline<length_type>::initLengths()
     }
 }
 
-template<typename length_type>
-void Spline<length_type>::clear()
+template<typename length_type> void Spline<length_type>::clear()
 {
     SplineBase::clear();
     lengths.clear();
 }
-///- Todo: fix these ugly assed miss-alignments.
 }
+
+// Todo: fix these ugly assed miss-alignments due to namespacing.

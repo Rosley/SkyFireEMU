@@ -80,39 +80,39 @@ namespace Movement
                                     | Unknown8    | Unknown10 | Unknown11 | Unknown12 | Unknown13,
         };
 
-        inline uint32& raw() { return (uint32&)*this; }
-        inline const uint32& raw() const { return (const uint32&)*this; }
+        inline uint32& raw() { return (uint32&)*this;}
+        inline const uint32& raw() const { return (const uint32&)*this;}
 
-        MoveSplineFlag()                        { raw() = 0; }
-        MoveSplineFlag(uint32 f)                { raw() = f; }
-        MoveSplineFlag(const MoveSplineFlag& f) { raw() = f.raw(); }
+        MoveSplineFlag()                        { raw() = 0;}
+        MoveSplineFlag(uint32 f)                { raw() = f;}
+        MoveSplineFlag(const MoveSplineFlag& f) { raw() = f.raw();}
 
         // Constant interface
 
-        bool isSmooth() const { return raw() & Mask_CatmullRom; }
-        bool isLinear() const { return !isSmooth(); }
-        bool isFacing() const { return raw() & Mask_Final_Facing; }
+        bool isSmooth() const { return raw() & Mask_CatmullRom;}
+        bool isLinear() const { return !isSmooth();}
+        bool isFacing() const { return raw() & Mask_Final_Facing;}
 
-        uint8 getAnimationId() const       { return animId; }
-        bool hasAllFlags(uint32 f) const   { return (raw() & f) == f; }
-        bool hasFlag(uint32 f) const       { return (raw() & f) != 0; }
-        uint32 operator & (uint32 f) const { return (raw() & f); }
-        uint32 operator | (uint32 f) const { return (raw() | f); }
+        uint8 getAnimationId() const       { return animId;}
+        bool hasAllFlags(uint32 f) const   { return (raw() & f) == f;}
+        bool hasFlag(uint32 f) const       { return (raw() & f) != 0;}
+        uint32 operator & (uint32 f) const { return (raw() & f);}
+        uint32 operator | (uint32 f) const { return (raw() | f);}
         std::string ToString() const;
 
         // Not constant interface
 
-        void operator &= (uint32 f) { raw() &= f; }
-        void operator |= (uint32 f) { raw() |= f; }
+        void operator &= (uint32 f) { raw() &= f;}
+        void operator |= (uint32 f) { raw() |= f;}
 
-        void EnableAnimation(uint8 anim) { raw() = raw() & ~(Mask_Animations |Falling|Parabolic) | Animation|anim; }
-        void EnableParabolic()           { raw() = raw() & ~(Mask_Animations |Falling|Animation) | Parabolic; }
-        void EnableFalling()             { raw() = raw() & ~(Mask_Animations |Parabolic|Animation) | Falling; }
-        void EnableFlying()              { raw() = raw() & ~Catmullrom | Flying; }
-        void EnableCatmullRom()          { raw() = raw() & ~Flying | Catmullrom; }
-        void EnableFacingPoint()         { raw() = raw() & ~Mask_Final_Facing | Final_Point; }
-        void EnableFacingAngle()         { raw() = raw() & ~Mask_Final_Facing | Final_Angle; }
-        void EnableFacingTarget()        { raw() = raw() & ~Mask_Final_Facing | Final_Target; }
+        void EnableAnimation(uint8 anim) { raw() = raw() & ~(Mask_Animations |Falling|Parabolic) | Animation|anim;}
+        void EnableParabolic()           { raw() = raw() & ~(Mask_Animations |Falling|Animation) | Parabolic;}
+        void EnableFalling()             { raw() = raw() & ~(Mask_Animations |Parabolic|Animation) | Falling;}
+        void EnableFlying()              { raw() = raw() & ~Catmullrom | Flying;}
+        void EnableCatmullRom()          { raw() = raw() & ~Flying | Catmullrom;}
+        void EnableFacingPoint()         { raw() = raw() & ~Mask_Final_Facing | Final_Point;}
+        void EnableFacingAngle()         { raw() = raw() & ~Mask_Final_Facing | Final_Angle;}
+        void EnableFacingTarget()        { raw() = raw() & ~Mask_Final_Facing | Final_Target;}
 
         uint8 animId             : 8;
         bool done                : 1;

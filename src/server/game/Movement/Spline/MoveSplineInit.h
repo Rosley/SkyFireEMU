@@ -81,7 +81,7 @@ namespace Movement
         /* Sets Id of first point of the path. When N-th path point will be done ILisener will notify that pointId + N done
          * Needed for waypoint movement where path splits into parts
          */
-        void SetFirstPointId(int32 pointId) { args.path_Idx_offset = pointId; }
+        void SetFirstPointId(int32 pointId) { args.path_Idx_offset = pointId;}
 
         /* Enables CatmullRom spline interpolation mode(makes path smooth)
          * if not enabled linear spline mode will be chosen. Disabled by default
@@ -114,7 +114,7 @@ namespace Movement
          */
         void SetVelocity(float velocity);
 
-        PointsArray& Path() { return args.path; }
+        PointsArray& Path() { return args.path;}
 
     protected:
 
@@ -122,14 +122,14 @@ namespace Movement
         Unit&  unit;
     };
 
-    inline void MoveSplineInit::SetFly()             { args.flags.EnableFlying(); }
-    inline void MoveSplineInit::SetWalk(bool enable) { args.flags.walkmode = enable; }
-    inline void MoveSplineInit::SetSmooth()          { args.flags.EnableCatmullRom(); }
-    inline void MoveSplineInit::SetCyclic()          { args.flags.cyclic = true; }
-    inline void MoveSplineInit::SetFall()            { args.flags.EnableFalling(); }
-    inline void MoveSplineInit::SetVelocity(float vel)           {  args.velocity = vel; }
-    inline void MoveSplineInit::SetOrientationInversed()         { args.flags.orientationInversed = true; }
-    inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable; }
+    inline void MoveSplineInit::SetFly()             { args.flags.EnableFlying();}
+    inline void MoveSplineInit::SetWalk(bool enable) { args.flags.walkmode = enable;}
+    inline void MoveSplineInit::SetSmooth()          { args.flags.EnableCatmullRom();}
+    inline void MoveSplineInit::SetCyclic()          { args.flags.cyclic = true;}
+    inline void MoveSplineInit::SetFall()            { args.flags.EnableFalling();}
+    inline void MoveSplineInit::SetVelocity(float vel)           {  args.velocity = vel;}
+    inline void MoveSplineInit::SetOrientationInversed()         { args.flags.orientationInversed = true;}
+    inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable;}
 
     inline void MoveSplineInit::MovebyPath(const PointsArray& controls, int32 path_offset)
     {

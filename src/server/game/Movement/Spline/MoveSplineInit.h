@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2011-2012 Project SkyFire <http://www.projectskyfire.org/>
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +19,7 @@
 #ifndef SKYFIRE_MOVESPLINEINIT_H
 #define SKYFIRE_MOVESPLINEINIT_H
 
+#include "MoveSplineInit.h"
 #include "MoveSplineInitArgs.h"
 #include "PathFinderMovementGenerator.h"
 
@@ -29,31 +29,31 @@ namespace Movement
 {
     enum AnimType
     {
-        ToGround        = 0,    // 460 = ToGround, index of AnimationData.dbc
-        FlyToFly        = 1,    // 461 = FlyToFly?
-        ToFly           = 2,    // 458 = ToFly
-        FlyToGround     = 3,    // 463 = FlyToGround
+        ToGround    = 0, // 460 = ToGround, index of AnimationData.dbc
+        FlyToFly    = 1, // 461 = FlyToFly?
+        ToFly       = 2, // 458 = ToFly
+        FlyToGround = 3, // 463 = FlyToGround
     };
 
-    /*  Initializes and launches spline movement  */
+    /*  Initializes and launches spline movement
+     */
     class MoveSplineInit
     {
     public:
 
         explicit MoveSplineInit(Unit& m);
 
-        /* Final pass of initialization that launches spline movement.
-         *  @return duration - estimated travel time
-         */
+        /*  Final pass of initialization that launches spline movement.
+        * @return duration - estimated travel time
+        */
         int32 Launch();
 
         /* Adds movement by parabolic trajectory
-         *  @param amplitude  - the maximum height of parabola, value could be negative and positive
-         *  @param start_time - delay between movement starting time and beginning to move by parabolic trajectory
+         * @param amplitude  - the maximum height of parabola, value could be negative and positive
+         * @param start_time - delay between movement starting time and beginning to move by parabolic trajectory
          * can't be combined with final animation
          */
         void SetParabolic(float amplitude, float start_time);
-
         /* Plays animation after movement done
          * can't be combined with parabolic movement
          */
@@ -61,50 +61,52 @@ namespace Movement
 
         /* Adds final facing animation
          * sets unit's facing to specified point/angle after all path done
-         * you can have only one final facing: previous will be overridden
+         * you can have only one final facing: previous will be overriden
          */
         void SetFacing(float angle);
         void SetFacing(Vector3 const& point);
         void SetFacing(const Unit * target);
 
         /* Initializes movement by path
-         *  @param path - array of points, shouldn't be empty
-         *  @param pointId - Id of first point of the path.
-         *      Example: when third path point will be done it will notify that pointId + 3 done
+         * @param path - array of points, shouldn't be empty
+         * @param pointId - Id of fisrt point of the path. Example: when third path point will be done it will notify that pointId + 3 done
          */
         void MovebyPath(const PointsArray& path, int32 pointId = 0);
 
-        /* Initializes simple A to B motion, A is current unit's position, B is destination */
+        /* Initializes simple A to B mition, A is current unit's position, B is destination
+         */
+        // void MoveTo(const Vector3& destination);
+        //void MoveTo(float x, float y, float z);
+
         void MoveTo(const Vector3& destination, bool generatePath = false, bool forceDestination = false);
         void MoveTo(float x, float y, float z, bool generatePath = false, bool forceDestination = false);
 
-        /* Sets Id of first point of the path. When N-th path point will be done ILisener will notify that pointId + N done
-         * Needed for waypoint movement where path splits into parts
+        /* Sets Id of fisrt point of the path. When N-th path point will be done ILisener will notify that pointId + N done
+         * Needed for waypoint movement where path splitten into parts
          */
-        void SetFirstPointId(int32 pointId) { args.path_Idx_offset = pointId;}
+        void SetFirstPointId(int32 pointId) { args.path_Idx_offset = pointId; }
 
         /* Enables CatmullRom spline interpolation mode(makes path smooth)
-         * if not enabled linear spline mode will be chosen. Disabled by default
+         * if not enabled linear spline mode will be choosen. Disabled by default
          */
-
         void SetSmooth();
-
-        /* Enables CatmullRom spline interpolation mode, enables flying animation. Disabled by default */
+        /* Enables CatmullRom spline interpolation mode, enables flying animation. Disabled by default
+         */
         void SetFly();
-
-        /* Enables walk mode. Disabled by default */
+        /* Enables walk mode. Disabled by default
+         */
         void SetWalk(bool enable);
-
-        /* Makes movement cyclic. Disabled by default */
+        /* Makes movement cyclic. Disabled by default
+         */
         void SetCyclic();
-
-        /* Enables falling mode. Disabled by default */
+        /* Enables falling mode. Disabled by default
+         */
         void SetFall();
-
-        /* Inverses unit model orientation. Disabled by default */
+        /* Inverses unit model orientation. Disabled by default
+         */
         void SetOrientationInversed();
-
-        /* Fixes unit's model rotation. Disabled by default */
+        /* Fixes unit's model rotation. Disabled by default
+         */
         void SetOrientationFixed(bool enable);
 
         /* Sets the velocity (in case you want to have custom movement velocity)
@@ -114,7 +116,7 @@ namespace Movement
          */
         void SetVelocity(float velocity);
 
-        PointsArray& Path() { return args.path;}
+        PointsArray& Path() { return args.path; }
 
     protected:
 
@@ -122,29 +124,33 @@ namespace Movement
         Unit&  unit;
     };
 
-    inline void MoveSplineInit::SetFly()             { args.flags.EnableFlying();}
+    inline void MoveSplineInit::SetFly() { args.flags.EnableFlying();}
     inline void MoveSplineInit::SetWalk(bool enable) { args.flags.walkmode = enable;}
-    inline void MoveSplineInit::SetSmooth()          { args.flags.EnableCatmullRom();}
-    inline void MoveSplineInit::SetCyclic()          { args.flags.cyclic = true;}
-    inline void MoveSplineInit::SetFall()            { args.flags.EnableFalling();}
-    inline void MoveSplineInit::SetVelocity(float vel)           {  args.velocity = vel;}
-    inline void MoveSplineInit::SetOrientationInversed()         { args.flags.orientationInversed = true;}
+    inline void MoveSplineInit::SetSmooth() { args.flags.EnableCatmullRom();}
+    inline void MoveSplineInit::SetCyclic() { args.flags.cyclic = true;}
+    inline void MoveSplineInit::SetFall() { args.flags.EnableFalling();}
+    inline void MoveSplineInit::SetVelocity(float vel){  args.velocity = vel;}
+    inline void MoveSplineInit::SetOrientationInversed() { args.flags.orientationInversed = true;}
     inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable;}
 
     inline void MoveSplineInit::MovebyPath(const PointsArray& controls, int32 path_offset)
     {
         args.path_Idx_offset = path_offset;
-        args.path.assign(controls.begin(), controls.end());
+        args.path.assign(controls.begin(),controls.end());
     }
 
     inline void MoveSplineInit::MoveTo(float x, float y, float z, bool generatePath, bool forceDestination)
     {
         Vector3 v(x, y, z);
+        MoveTo(v);
         MoveTo(v, generatePath, forceDestination);
     }
 
     inline void MoveSplineInit::MoveTo(const Vector3& dest, bool generatePath, bool forceDestination)
     {
+       //  args.path_Idx_offset = 0;
+       //  args.path.resize(2);
+       //  args.path[1] = dest;
         if (generatePath)
         {
             PathFinderMovementGenerator path(&unit);
@@ -157,7 +163,7 @@ namespace Movement
             args.path.resize(2);
             args.path[1] = dest;
         }
-    }
+     }
 
     inline void MoveSplineInit::SetParabolic(float amplitude, float time_shift)
     {

@@ -2985,6 +2985,12 @@ void SpellMgr::LoadSpellCustomAttr()
             case 93072: // Bring our Boys back
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_NEARBY_ENTRY;
                 break;
+            case 11113: // Blast Wave
+                // Had to do this, currently this spell is impossible to be implemented
+                // on the current proc system
+                spellInfo->Effects[2].Effect = NULL;
+                spellInfo->ExplicitTargetMask = TARGET_FLAG_DEST_LOCATION;
+                break;
             case 51514: // Hex
             case 118:   // Polymorph
             case 61305: // Polymorph (other animal)
@@ -3012,7 +3018,7 @@ void SpellMgr::LoadSpellCustomAttr()
             // Need this otherwise we'll be having multiple chance rolls for judgement.
             case 85117: // Divine Purpose (Rank 1)
             case 86172: // Divine Purpose (Rank 2)
-                spellInfo->AttributesEx3 = 0; 
+                spellInfo->AttributesEx3 = 0;
                 break;
             case 90174: // Divine Purpose Proc
                 spellInfo->ProcCharges = 1;

@@ -42,7 +42,7 @@ namespace Movement
         }
         else if (moveFlags & MOVEMENTFLAG_WALKING)
         {
-            //if ( speed_obj.run > speed_obj.walk )
+            // if ( speed_obj.run > speed_obj.walk )
             return MOVE_WALK;
         }
         else if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.run >= speed_obj.run_back*/)
@@ -56,8 +56,10 @@ namespace Movement
         MoveSpline& move_spline = *unit.movespline;
 
         Location real_position(unit.GetPositionX(), unit.GetPositionY(), unit.GetPositionZ(), unit.GetOrientation());
-        // there is a big chane that current position is unknown if current state is not finalized, need compute it
-        // this also allows calculate spline position and update map position in much greater intervals
+
+        /* there is a big chance that current position is unknown if current state is not finalized,
+         *  need compute it this also allows calculate spline position and update map position in much greater intervals
+         */
         if (!move_spline.Finalized())
             real_position = move_spline.ComputePosition();
 
@@ -67,7 +69,7 @@ namespace Movement
             MoveTo(real_position);
         }
 
-        // corrent first vertex
+        // current first vertex
         args.path[0] = real_position;
         args.initialOrientation = real_position.orientation;
 
@@ -79,17 +81,20 @@ namespace Movement
 
         moveFlags |= (MOVEMENTFLAG_SPLINE_ENABLED | MOVEMENTFLAG_FORWARD);
 
-        if (fabs(args.velocity) < M_NULL_F)
+        if (args.velocity == 0.f)
             args.velocity = unit.GetSpeed(SelectSpeedType(moveFlags));
 
         if (!args.Validate())
             return 0;
 
+        if (moveFlags & MOVEMENTFLAG_ROOT)
+            moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
+
         unit._movementInfo.SetMovementFlags((MovementFlags)moveFlags);
         move_spline.Initialize(args);
 
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
-        data << unit.GetPackGUID();
+        data.append(unit.GetPackGUID());
         PacketBuilder::WriteMonsterMove(move_spline, data);
         unit.SendMessageToSet(&data, true);
 
@@ -111,7 +116,7 @@ namespace Movement
 
     void MoveSplineInit::SetFacing(float angle)
     {
-        args.facing.angle = G3D::wrap(angle, 0.0f, (float)G3D::twoPi());
+        args.facing.angle = G3D::wrap(angle, 0.f, (float)G3D::twoPi());
         args.flags.EnableFacingAngle();
     }
 }

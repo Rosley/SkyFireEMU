@@ -33,8 +33,9 @@ namespace Movement
         {
             float x, y, z;
         } f;
-        uint64 target;
-        float  angle;
+
+        uint64  target;
+        float   angle;
 
         FacingInfo(float o) : angle(o) {}
         FacingInfo(uint64 t) : target(t) {}
@@ -43,7 +44,7 @@ namespace Movement
 
     struct MoveSplineInitArgs
     {
-        MoveSplineInitArgs(size_t path_capacity = 16) : path_Idx_offset(0), velocity(0.0f), parabolic_amplitude(0.0f), time_perc(0.0f), splineId(0), initialOrientation(0.0f)
+        MoveSplineInitArgs(size_t path_capacity = 16) : path_Idx_offset(0), velocity(0.f), parabolic_amplitude(0.f), time_perc(0.f), splineId(0), initialOrientation(0.f)
         {
             path.reserve(path_capacity);
         }
@@ -58,7 +59,7 @@ namespace Movement
         uint32 splineId;
         float initialOrientation;
 
-        /** Returns true to show that the arguments were configured correctly and MoveSpline initialization will succeed. */
+        /* Returns true to show that the arguments were configured correctly and MoveSpline initialization will succeed. */
         bool Validate() const;
     private:
         bool _checkPathBounds() const;

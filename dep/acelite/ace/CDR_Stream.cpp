@@ -1,4 +1,4 @@
-// $Id: CDR_Stream.cpp 91373 2010-08-17 07:35:27Z mhengstmengel $
+// $Id: CDR_Stream.cpp 95579 2012-02-29 16:55:18Z sma $
 
 #include "ace/CDR_Stream.h"
 #include "ace/SString.h"
@@ -631,6 +631,7 @@ ACE_OutputCDR::write_wchar_array_i (const ACE_CDR::WChar *x,
   return false;
 }
 
+
 ACE_CDR::Boolean
 ACE_OutputCDR::write_array (const void *x,
                             size_t size,
@@ -679,6 +680,7 @@ ACE_OutputCDR::write_array (const void *x,
   this->good_bit_ = false;
   return false;
 }
+
 
 ACE_CDR::Boolean
 ACE_OutputCDR::write_boolean_array (const ACE_CDR::Boolean* x,
@@ -743,6 +745,7 @@ ACE_OutputCDR::replace (ACE_CDR::Long x, char* loc)
   return true;
 }
 
+
 ACE_CDR::Boolean
 ACE_OutputCDR::replace (ACE_CDR::Short x, char* loc)
 {
@@ -764,6 +767,7 @@ ACE_OutputCDR::replace (ACE_CDR::Short x, char* loc)
 
   return true;
 }
+
 
 int
 ACE_OutputCDR::consolidate (void)
@@ -808,6 +812,7 @@ ACE_OutputCDR::consolidate (void)
 
   return 0;
 }
+
 
 ACE_Message_Block*
 ACE_OutputCDR::find (char* loc)
@@ -1273,6 +1278,7 @@ ACE_InputCDR::read_wchar (ACE_CDR::WChar& x)
               x = static_cast<ACE_CDR::WChar> (ox);
               return true;
             }
+
         }
     }
   return (this->good_bit_ = false);
@@ -1389,6 +1395,7 @@ ACE_InputCDR::read_wstring (ACE_CDR::WChar*& x)
 
           if (this->read_wchar_array (x, len))
             {
+
               //Null character used by applications to find the end of
               //the wstring
               //Is this okay with the GIOP 1.2 spec??
@@ -1516,6 +1523,7 @@ ACE_InputCDR::read_wchar_array_i (ACE_CDR::WChar* x,
     }
   return false;
 }
+
 
 ACE_CDR::Boolean
 ACE_InputCDR::read_boolean_array (ACE_CDR::Boolean *x,
@@ -1674,7 +1682,17 @@ ACE_InputCDR::skip_string (void)
   ACE_CDR::ULong len = 0;
   if (this->read_ulong (len))
     {
-      if (this->rd_ptr () + len <= this->wr_ptr ())
+      if (static_cast<ACE_CDR::ULong> (~0u) == len)
+        {
+          // Indirection, next Long in stream is signed offset to actual
+          // string location (backwards in same stream from here).
+          ACE_CDR::Long offset = 0;
+          if (this->read_long (offset))
+            {
+              return true;
+            }
+        }
+      else if (this->rd_ptr () + len <= this->wr_ptr ())
         {
           this->rd_ptr (len);
           return true;

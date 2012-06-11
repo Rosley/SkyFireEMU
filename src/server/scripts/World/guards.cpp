@@ -122,7 +122,7 @@ public:
                     if (info)
                         healing = true;
                     else
-                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, 0, 0, SELECT_EFFECT_DONTCARE);
+                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, 0, 0, SELECT_EFFECT_DONT_CARE);
 
                     // 20% chance to replace our white hit with a spell
                     if (info && urand(0, 99) < 20 && !globalCooldown)
@@ -158,7 +158,7 @@ public:
                     if (info)
                         healing = true;
                     else
-                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, NOMINAL_MELEE_RANGE, 0, SELECT_EFFECT_DONTCARE);
+                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, NOMINAL_MELEE_RANGE, 0, SELECT_EFFECT_DONT_CARE);
 
                     // Found a spell, check if we are not on a cooldown
                     if (info && !globalCooldown)

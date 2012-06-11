@@ -119,8 +119,7 @@ class AreaTrigger_at_stormwright_shelf : public AreaTriggerScript
 {
     public:
 
-        AreaTrigger_at_stormwright_shelf()
-            : AreaTriggerScript("at_stormwright_shelf") {}
+        AreaTrigger_at_stormwright_shelf() : AreaTriggerScript("at_stormwright_shelf") {}
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
         {
@@ -143,21 +142,21 @@ enum ScentLarkorwi
 
 class AreaTrigger_at_scent_larkorwi : public AreaTriggerScript
 {
-    public:
+public:
 
-        AreaTrigger_at_scent_larkorwi()
-            : AreaTriggerScript("at_scent_larkorwi") {}
+    AreaTrigger_at_scent_larkorwi()
+        : AreaTriggerScript("at_scent_larkorwi") {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+    {
+        if (!player->isDead() && player->GetQuestStatus(QUEST_SCENT_OF_LARKORWI) == QUEST_STATUS_INCOMPLETE)
         {
-            if (!player->isDead() && player->GetQuestStatus(QUEST_SCENT_OF_LARKORWI) == QUEST_STATUS_INCOMPLETE)
-            {
-                if (!player->FindNearestCreature(NPC_LARKORWI_MATE, 15))
-                    player->SummonCreature(NPC_LARKORWI_MATE, player->GetPositionX()+5, player->GetPositionY(), player->GetPositionZ(), 3.3f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000);
-            }
-
-            return false;
+            if (!player->FindNearestCreature(NPC_LARKORWI_MATE, 15))
+                player->SummonCreature(NPC_LARKORWI_MATE, player->GetPositionX()+5, player->GetPositionY(), player->GetPositionZ(), 3.3f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000);
         }
+
+        return false;
+    }
 };
 
 /*#####
@@ -227,27 +226,24 @@ enum Waygate
 
 class AreaTrigger_at_sholazar_waygate : public AreaTriggerScript
 {
-    public:
+public:
 
-        AreaTrigger_at_sholazar_waygate()
-            : AreaTriggerScript("at_sholazar_waygate")
-        {
-        }
+    AreaTrigger_at_sholazar_waygate() : AreaTriggerScript("at_sholazar_waygate") {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+    bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+    {
+        if (player->GetQuestStatus(QUEST_THE_MAKERS_OVERLOOK) == QUEST_STATUS_REWARDED && !player->isDead() &&
+            player->GetQuestStatus(QUEST_THE_MAKERS_PERCH)    == QUEST_STATUS_REWARDED)
         {
-            if (player->GetQuestStatus(QUEST_THE_MAKERS_OVERLOOK) == QUEST_STATUS_REWARDED && !player->isDead() &&
-                player->GetQuestStatus(QUEST_THE_MAKERS_PERCH)    == QUEST_STATUS_REWARDED)
+            switch (trigger->id)
             {
-                switch (trigger->id)
-                {
-                    case AT_SHOLAZAR: player->CastSpell(player, SPELL_SHOLAZAR_TO_UNGORO_TELEPORT, false); break;
-                    case AT_UNGORO:   player->CastSpell(player, SPELL_UNGORO_TO_SHOLAZAR_TELEPORT, false); break;
-                }
+                case AT_SHOLAZAR: player->CastSpell(player, SPELL_SHOLAZAR_TO_UNGORO_TELEPORT, false); break;
+                case AT_UNGORO:   player->CastSpell(player, SPELL_UNGORO_TO_SHOLAZAR_TELEPORT, false); break;
             }
-
-            return false;
         }
+
+        return false;
+    }
 };
 
 /*######
@@ -263,26 +259,26 @@ enum NatsLanding
 
 class AreaTrigger_at_nats_landing : public AreaTriggerScript
 {
-    public:
-        AreaTrigger_at_nats_landing() : AreaTriggerScript("at_nats_landing") { }
+public:
+    AreaTrigger_at_nats_landing() : AreaTriggerScript("at_nats_landing") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+    {
+        if (!player->isAlive() || !player->HasAura(SPELL_FISH_PASTE))
+            return false;
+
+        if (player->GetQuestStatus(QUEST_NATS_BARGAIN) == QUEST_STATUS_INCOMPLETE)
         {
-            if (!player->isAlive() || !player->HasAura(SPELL_FISH_PASTE))
-                return false;
-
-            if (player->GetQuestStatus(QUEST_NATS_BARGAIN) == QUEST_STATUS_INCOMPLETE)
+            if (!player->FindNearestCreature(NPC_LURKING_SHARK, 20.0f))
             {
-                if (!player->FindNearestCreature(NPC_LURKING_SHARK, 20.0f))
-                {
-                    if (Creature* shark = player->SummonCreature(NPC_LURKING_SHARK, -4246.243f, -3922.356f, -7.488f, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000))
-                        shark->AI()->AttackStart(player);
+                if (Creature* shark = player->SummonCreature(NPC_LURKING_SHARK, -4246.243f, -3922.356f, -7.488f, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000))
+                    shark->AI()->AttackStart(player);
 
-                    return false;
-                }
+                return false;
             }
-            return true;
         }
+        return true;
+    }
 };
 
 /*######
@@ -313,46 +309,46 @@ enum BringYourOrphanTo
 
 class AreaTrigger_at_bring_your_orphan_to : public AreaTriggerScript
 {
-    public:
-        AreaTrigger_at_bring_your_orphan_to() : AreaTriggerScript("at_bring_your_orphan_to") { }
+public:
+    AreaTrigger_at_bring_your_orphan_to() : AreaTriggerScript("at_bring_your_orphan_to") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+    bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+    {
+        uint32 questId = 0;
+
+        if (player->isDead() || !player->HasAura(AURA_ORPHAN_OUT))
+            return false;
+
+        switch (trigger->id)
         {
-            uint32 questId = 0;
-
-            if (player->isDead() || !player->HasAura(AURA_ORPHAN_OUT))
-                return false;
-
-            switch (trigger->id)
-            {
-                case AT_DOWN_AT_THE_DOCKS:
-                    questId = QUEST_DOWN_AT_THE_DOCKS;
-                    break;
-                case AT_GATEWAY_TO_THE_FRONTIER:
-                    questId = QUEST_GATEWAY_TO_THE_FRONTIER;
-                    break;
-                case AT_LORDAERON_THRONE_ROOM:
-                    questId = QUEST_LORDAERON_THRONE_ROOM;
-                    break;
-                case AT_BOUGHT_OF_ETERNALS:
-                    questId = QUEST_BOUGHT_OF_ETERNALS;
-                    break;
-                case AT_SPOOKY_LIGHTHOUSE:
-                    questId = QUEST_SPOOKY_LIGHTHOUSE;
-                    break;
-                case AT_STONEWROUGHT_DAM:
-                    questId = QUEST_STONEWROUGHT_DAM;
-                    break;
-                case AT_DARK_PORTAL:
-                    questId = player->GetTeam() == ALLIANCE ? QUEST_DARK_PORTAL_A : QUEST_DARK_PORTAL_H;
-                    break;
-            }
-
-            if (questId && player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
-                player->AreaExploredOrEventHappens(questId);
-
-            return true;
+            case AT_DOWN_AT_THE_DOCKS:
+                questId = QUEST_DOWN_AT_THE_DOCKS;
+                break;
+            case AT_GATEWAY_TO_THE_FRONTIER:
+                questId = QUEST_GATEWAY_TO_THE_FRONTIER;
+                break;
+            case AT_LORDAERON_THRONE_ROOM:
+                questId = QUEST_LORDAERON_THRONE_ROOM;
+                break;
+            case AT_BOUGHT_OF_ETERNALS:
+                questId = QUEST_BOUGHT_OF_ETERNALS;
+                break;
+            case AT_SPOOKY_LIGHTHOUSE:
+                questId = QUEST_SPOOKY_LIGHTHOUSE;
+                break;
+            case AT_STONEWROUGHT_DAM:
+                questId = QUEST_STONEWROUGHT_DAM;
+                break;
+            case AT_DARK_PORTAL:
+                questId = player->GetTeam() == ALLIANCE ? QUEST_DARK_PORTAL_A : QUEST_DARK_PORTAL_H;
+                break;
         }
+
+        if (questId && player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
+            player->AreaExploredOrEventHappens(questId);
+
+        return true;
+    }
 };
 
 /*######

@@ -206,7 +206,7 @@ void BattlegroundTP::StartingEventOpenDoors()
         SpawnBGObject(i, RESPAWN_IMMEDIATELY);
 
     // players joining later are not eligible
-    //StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, TP_EVENT_START_BATTLE);
+    //StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, TP_EVENT_START_BATTLE);  //Fixme!!
 }
 
 void BattlegroundTP::AddPlayer(Player *player)
@@ -491,7 +491,7 @@ void BattlegroundTP::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         UpdateWorldState(BG_TP_FLAG_UNK_ALLIANCE, 1);
         Source->CastSpell(Source, BG_TP_SPELL_ALLIANCE_FLAG, true);
 
-        //Source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, BG_TP_SPELL_ALLIANCE_FLAG_PICKED);
+        //Source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, BG_TP_SPELL_ALLIANCE_FLAG_PICKED); //Fixme!!
         if (m_FlagState[1] == BG_TP_FLAG_STATE_ON_PLAYER)
             m_BothFlagsKept = true;
     }
@@ -513,7 +513,7 @@ void BattlegroundTP::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         UpdateFlagState(ALLIANCE, BG_TP_FLAG_STATE_ON_PLAYER);
         UpdateWorldState(BG_TP_FLAG_UNK_HORDE, 1);
         Source->CastSpell(Source, BG_TP_SPELL_HORDE_FLAG, true);
-        //Source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, BG_TP_SPELL_HORDE_FLAG_PICKED);
+        //Source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, BG_TP_SPELL_HORDE_FLAG_PICKED); //Fixme!!
 
         if (m_FlagState[0] == BG_TP_FLAG_STATE_ON_PLAYER)
             m_BothFlagsKept = true;

@@ -105,7 +105,7 @@ public:
                     // No healing spell available, select a hostile spell
                     if (info) Healing = true;
                     else
-                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, 0, 0, SELECT_EFFECT_DONTCARE);
+                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, 0, 0, SELECT_EFFECT_DONT_CARE);
 
                     // 50% chance if elite or higher, 20% chance if not, to replace our white hit with a spell
                     if (info && (rand() % (me->GetCreatureTemplate()->rank > 1 ? 2 : 5) == 0) && !GlobalCooldown)
@@ -138,7 +138,7 @@ public:
                     // No healing spell available, See if we can cast a ranged spell (Range must be greater than ATTACK_DISTANCE)
                     if (info) Healing = true;
                     else
-                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, NOMINAL_MELEE_RANGE, 0, SELECT_EFFECT_DONTCARE);
+                        info = SelectSpell(me->getVictim(), 0, 0, SELECT_TARGET_ANY_ENEMY, 0, 0, NOMINAL_MELEE_RANGE, 0, SELECT_EFFECT_DONT_CARE);
 
                     // Found a spell, check if we are not on a cooldown
                     if (info && !GlobalCooldown)

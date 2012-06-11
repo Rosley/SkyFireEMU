@@ -177,34 +177,6 @@ public:
 };
 
 /*######
-## go_gilded_brazier (Paladin First Trail quest (9678))
-######*/
-
-enum GildedBrazier
-{
-    NPC_STILLBLADE  = 17716,
-};
-
-class go_gilded_brazier : public GameObjectScript
-{
-public:
-    go_gilded_brazier() : GameObjectScript("go_gilded_brazier") {}
-
-    bool OnGossipHello(Player* player, GameObject* go)
-    {
-        if (go->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
-        {
-            if (player->GetQuestStatus(9678) == QUEST_STATUS_INCOMPLETE)
-            {
-                if (Creature* Stillblade = player->SummonCreature(NPC_STILLBLADE, 8106.11f, -7542.06f, 151.775f, 3.02598f, TEMPSUMMON_DEAD_DESPAWN, 60000))
-                    Stillblade->AI()->AttackStart(player);
-            }
-        }
-        return true;
-    }
-};
-
-/*######
 ## go_orb_of_command
 ######*/
 
@@ -1313,7 +1285,6 @@ void AddSC_go_scripts()
     new go_western_crystal_pylon;
     new go_barov_journal;
     new go_field_repair_bot_74A;
-    new go_gilded_brazier;
     new go_orb_of_command;
     new go_shrine_of_the_birds;
     new go_southfury_moonstone;

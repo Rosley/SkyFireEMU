@@ -36,7 +36,7 @@ class SpellInfo;
 //Spell targets used by SelectSpell
 enum SelectTargetType
 {
-    SELECT_TARGET_DONTCARE = 0,                             //All target types allowed
+    SELECT_TARGET_DONT_CARE = 0,                             //All target types allowed
 
     SELECT_TARGET_SELF,                                     //Only Self casting
 
@@ -52,7 +52,7 @@ enum SelectTargetType
 //Spell Effects used by SelectSpell
 enum SelectEffect
 {
-    SELECT_EFFECT_DONTCARE = 0,                             //All spell effects allowed
+    SELECT_EFFECT_DONT_CARE = 0,                             //All spell effects allowed
     SELECT_EFFECT_DAMAGE,                                   //Spell does damage
     SELECT_EFFECT_HEALING,                                  //Spell does healing
     SELECT_EFFECT_AURA,                                     //Spell applies an aura
@@ -89,7 +89,7 @@ class CreatureAI : public UnitAI
         // Called if IsVisible(Unit* who) is true at each who move, reaction at visibility zone enter
         void MoveInLineOfSight_Safe(Unit* who);
 
-        // Called in Creature::Update when deathstate = DEAD. Inherited classes may maniuplate the ability to respawn based on scripted events.
+        // Called in Creature::Update when deathstate = DEAD. Inherited classes may manipulate the ability to respawn based on scripted events.
         virtual bool CanRespawn() { return true; }
 
         // Called for reaction at stopping attack at no attackers or targets
@@ -121,7 +121,7 @@ class CreatureAI : public UnitAI
         //virtual void AttackedBy(Unit* attacker);
         virtual bool IsEscorted() { return false; }
 
-        // Called when creature is spawned or respawned (for reseting variables)
+        // Called when creature is spawned or respawned (for resetting variables)
         virtual void JustRespawned() { Reset(); }
 
         // Called at waypoint reached or point movement finished

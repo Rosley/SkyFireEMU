@@ -37,22 +37,10 @@ public:
 
     ChatCommand* GetCommands() const
     {
-        static ChatCommand npcAddCommandTable[] =
+        static ChatCommand npcVendorCommandTable[] =
         {
-            { "formation",     SEC_MODERATOR,      false, &HandleNpcAddFormationCommand,      "", NULL },
-            { "item",          SEC_GAMEMASTER,     false, &HandleNpcAddVendorItemCommand,     "", NULL },
-            { "move",          SEC_GAMEMASTER,     false, &HandleNpcAddMoveCommand,           "", NULL },
-            { "temp",          SEC_GAMEMASTER,     false, &HandleNpcAddTempSpawnCommand,      "", NULL },
-            //{ TODO: fix or remove this command
-            { "weapon",        SEC_ADMINISTRATOR,  false, &HandleNpcAddWeaponCommand,         "", NULL },
-            //}
-            { "",              SEC_GAMEMASTER,     false, &HandleNpcAddCommand,               "", NULL },
-            { NULL,             0,                  false, NULL,                               "", NULL }
-        };
-        static ChatCommand npcDeleteCommandTable[] =
-        {
-            { "item",          SEC_GAMEMASTER,     false, &HandleNpcDeleteVendorItemCommand,  "", NULL },
-            { "",              SEC_GAMEMASTER,     false, &HandleNpcDeleteCommand,            "", NULL },
+            { "additem",        SEC_GAMEMASTER,     false, &HandleNpcAddVendorItemCommand,     "", NULL },
+            { "removeitem",     SEC_GAMEMASTER,     false, &HandleNpcDeleteVendorItemCommand,  "", NULL },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand npcFollowCommandTable[] =
@@ -74,10 +62,6 @@ public:
             { "phase",         SEC_GAMEMASTER,     false, &HandleNpcSetPhaseCommand,          "", NULL },
             { "spawndist",     SEC_GAMEMASTER,     false, &HandleNpcSetSpawnDistCommand,      "", NULL },
             { "spawntime",     SEC_GAMEMASTER,     false, &HandleNpcSetSpawnTimeCommand,      "", NULL },
-            //{ TODO: fix or remove these commands
-            { "name",          SEC_GAMEMASTER,     false, &HandleNpcSetNameCommand,           "", NULL },
-            { "subname",       SEC_GAMEMASTER,     false, &HandleNpcSetSubNameCommand,        "", NULL },
-            //}
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         static ChatCommand npcCommandTable[] =
@@ -87,15 +71,67 @@ public:
             { "playemote",     SEC_ADMINISTRATOR,  false, &HandleNpcPlayEmoteCommand,         "", NULL },
             { "say",           SEC_MODERATOR,      false, &HandleNpcSayCommand,               "", NULL },
             { "textemote",     SEC_MODERATOR,      false, &HandleNpcTextEmoteCommand,         "", NULL },
+            { "formation",     SEC_MODERATOR,      false, &HandleNpcAddFormationCommand,      "", NULL },
+            { "move",          SEC_GAMEMASTER,     false, &HandleNpcAddMoveCommand,           "", NULL },
+            { "delete",        SEC_GAMEMASTER,     false, &HandleNpcDeleteCommand,            "", NULL },
+            { "spawn",         SEC_GAMEMASTER,     false, &HandleDetermineNpcSpawn,           "", NULL },
             { "whisper",       SEC_MODERATOR,      false, &HandleNpcWhisperCommand,           "", NULL },
             { "yell",          SEC_MODERATOR,      false, &HandleNpcYellCommand,              "", NULL },
             { "tame",          SEC_GAMEMASTER,     false, &HandleNpcTameCommand,              "", NULL },
-            { "add",           SEC_GAMEMASTER,     false, NULL,                 "", npcAddCommandTable },
-            { "delete",        SEC_GAMEMASTER,     false, NULL,              "", npcDeleteCommandTable },
             { "follow",        SEC_GAMEMASTER,     false, NULL,              "", npcFollowCommandTable },
             { "set",           SEC_GAMEMASTER,     false, NULL,                 "", npcSetCommandTable },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
+        #define TIME_BETWEEN_SPAWNS_MILLIS 15000
+    static bool HandleDetermineNpcSpawn(ChatHandler* handler, const char* args)
+    {
+		if (!handler->GetSession()->GetPlayer()->CanUseID(DISABLE_TYPE_ZONE, handler->GetSession()->GetPlayer()->GetZoneId()))
+		{
+			handler->SendSysMessage("Spawning is prohibited in this zone.");
+			return true;
+		}
+        
+        if (handler->GetSession()->GetSecurity() == SEC_PLAYER)
+		{
+			int timeSinceLastSpawn = handler->GetSession()->GetPlayer()->m_lastSpawnTime - getMSTime();
+			if (timeSinceLastSpawn > -TIME_BETWEEN_SPAWNS_MILLIS && timeSinceLastSpawn < TIME_BETWEEN_SPAWNS_MILLIS)
+			{
+				handler->SendSysMessage("You may only spawn NPCs once every 15 seconds unless you are a voter.");
+				return true;
+			}
+			else
+				handler->GetSession()->GetPlayer()->m_lastSpawnTime = getMSTime();
+		}
+		
+		if (!*args)
+            return false;
+
+		char* idstr = strtok((char*)args, " ");
+        uint32 id = (uint32)atoi(idstr);
+        bool save = false;
+	    char* savestr = strtok(NULL, " ");
+
+        if (!handler->GetSession()->GetPlayer()->CanUseID(DISABLE_TYPE_NPC, id))
+        {
+            handler->PSendSysMessage("This NPC (id '%u') is disabled.", id);
+            return true;
+        }
+
+		if (savestr)
+			save = (atoi(savestr) > 0 ? true : false);
+		
+		if (save && handler->GetSession()->GetSecurity() > SEC_PLAYER)
+		{
+            HandleNpcAddCommand(handler, idstr);
+			return true;
+		}
+		else
+		{
+			HandleNpcTempAddCommand(handler, idstr);
+			return true;
+		}
+		return true;
+	}
         static ChatCommand commandTable[] =
         {
             { "npc",           SEC_MODERATOR,      false, NULL,                    "", npcCommandTable },

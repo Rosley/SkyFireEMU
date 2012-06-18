@@ -70,23 +70,6 @@ public:
 		if (!*args)
             return false;
 
-		if (!handler->GetSession()->GetPlayer()->CanUseID(DISABLE_TYPE_ZONE, handler->GetSession()->GetPlayer()->GetZoneId()))
-		{
-			handler->SendSysMessage("Spawning is prohibited in this zone.");
-			return true;
-		}
-
-		char* idstr = strtok((char*)args, " ");
-        uint32 id = (uint32)atoi(idstr);
-        bool save = false;
-	    char* savestr = strtok(NULL, " ");
-
-        if (!handler->GetSession()->GetPlayer()->CanUseID(DISABLE_TYPE_GOBJECT, id))
-        {
-            handler->PSendSysMessage("This gobject (id '%u') is disabled.", id);
-            return true;
-        }
-
 		if (savestr)
 			save = (atoi(savestr) > 0 ? true : false);
 		

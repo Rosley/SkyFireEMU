@@ -37,12 +37,6 @@ public:
 
     ChatCommand* GetCommands() const
     {
-        static ChatCommand gobjectAddCommandTable[] =
-        {
-            { "temp",          SEC_GAMEMASTER,     false, &HandleGameObjectAddTempCommand,   "", NULL },
-            { "",              SEC_GAMEMASTER,     false, &HandleGameObjectAddCommand,       "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
-        };
         static ChatCommand gobjectSetCommandTable[] =
         {
             { "phase",         SEC_GAMEMASTER,     false, &HandleGameObjectSetPhaseCommand,  "", NULL },
@@ -55,10 +49,11 @@ public:
             { "delete",        SEC_GAMEMASTER,     false, &HandleGameObjectDeleteCommand,    "", NULL },
             { "info",          SEC_GAMEMASTER,     false, &HandleGameObjectInfoCommand,      "", NULL },
             { "move",          SEC_GAMEMASTER,     false, &HandleGameObjectMoveCommand,      "", NULL },
+            { "select",        SEC_GAMEMASTER,     false, &HandleGameObjectSelectCommand,    "", NULL },
             { "near",          SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", NULL },
             { "target",        SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
             { "turn",          SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
-            { "add",           SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
+            { "spawn",         SEC_GAMEMASTER,     false, &HandleDetermineGobjectSpawn,      "", NULL },
             { "set",           SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
@@ -70,6 +65,43 @@ public:
         return commandTable;
     }
 
+    static bool HandleDetermineGobjectSpawn(ChatHandler* handler, const char* args)
+    {    	
+		if (!*args)
+            return false;
+
+		if (!handler->GetSession()->GetPlayer()->CanUseID(DISABLE_TYPE_ZONE, handler->GetSession()->GetPlayer()->GetZoneId()))
+		{
+			handler->SendSysMessage("Spawning is prohibited in this zone.");
+			return true;
+		}
+
+		char* idstr = strtok((char*)args, " ");
+        uint32 id = (uint32)atoi(idstr);
+        bool save = false;
+	    char* savestr = strtok(NULL, " ");
+
+        if (!handler->GetSession()->GetPlayer()->CanUseID(DISABLE_TYPE_GOBJECT, id))
+        {
+            handler->PSendSysMessage("This gobject (id '%u') is disabled.", id);
+            return true;
+        }
+
+		if (savestr)
+			save = (atoi(savestr) > 0 ? true : false);
+		
+		if (save && handler->GetSession()->GetSecurity() > SEC_PLAYER)
+		{
+            HandleGameObjectAddCommand(handler, idstr);
+			return true;
+		}
+		else
+		{
+			HandleGameObjectAddTempCommand(handler, idstr);
+			return true;
+		}
+		return true;
+	}
     static bool HandleGameObjectActivateCommand(ChatHandler* handler, char const* args)
     {
         if (!*args)
@@ -487,6 +519,83 @@ public:
         object->Refresh();
 
         handler->PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, object->GetGUIDLow(), object->GetGOInfo()->name.c_str(), object->GetGUIDLow());
+
+        return true;
+    }
+    
+    static bool HandleGameObjectSelectCommand(ChatHandler* handler, const char* args)
+    {
+        uint32 entry = 0;
+        std::string name;
+        uint32 guid = 0;
+        WorldObject* obj = handler->getSelectedObject();
+        Player* player = handler->GetSession()->GetPlayer();
+
+        if (!obj)
+        {
+            handler->SendSysMessage("No objects in range!");
+            return true;
+        }
+
+        float distX = player->GetPositionX() - obj->GetPositionX();
+        float distY = player->GetPositionY() - obj->GetPositionY();
+        float distZ = player->GetPositionZ() - obj->GetPositionZ();
+
+        float distance = sqrtf(distZ * distZ + distY * distY + distX * distX);
+            
+        entry = obj->GetEntry();
+
+        GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
+
+        if (!goinfo)
+            return false;
+
+        name = goinfo->name;
+        guid = obj->ToGameObject()->GetGUIDLow();
+
+        handler->PSendSysMessage("Selected GameObject [ %s ](ID: %u) which is %f feet away from you.", name.c_str(), entry, distance);
+        handler->GetSession()->GetPlayer()->SetSelectedGobject(guid);
+
+        return true;
+    }
+
+
+
+    //show info of gameobject
+    static bool HandleGameObjectInfoCommand(ChatHandler* handler, char const* args)
+    {
+        uint32 entry = 0;
+        uint32 type = 0;
+        uint32 displayId = 0;
+        std::string name;
+        uint32 lootId = 0;
+
+        if (!*args)
+        {
+            if (WorldObject* object = handler->getSelectedObject())
+                entry = object->GetEntry();
+            else
+                entry = atoi((char*)args);
+        }
+
+        GameObjectTemplate const* gameObjectInfo = sObjectMgr->GetGameObjectTemplate(entry);
+
+        if (!gameObjectInfo)
+            return false;
+
+        type = gameObjectInfo->type;
+        displayId = gameObjectInfo->displayId;
+        name = gameObjectInfo->name;
+        if (type == GAMEOBJECT_TYPE_CHEST)
+            lootId = gameObjectInfo->chest.lootId;
+        else if (type == GAMEOBJECT_TYPE_FISHINGHOLE)
+            lootId = gameObjectInfo->fishinghole.lootId;
+
+        handler->PSendSysMessage(LANG_GOINFO_ENTRY, entry);
+        handler->PSendSysMessage(LANG_GOINFO_TYPE, type);
+        handler->PSendSysMessage(LANG_GOINFO_LOOTID, lootId);
+        handler->PSendSysMessage(LANG_GOINFO_DISPLAYID, displayId);
+        handler->PSendSysMessage(LANG_GOINFO_NAME, name.c_str());
 
         return true;
     }

@@ -559,47 +559,6 @@ public:
         return true;
     }
 
-
-
-    //show info of gameobject
-    static bool HandleGameObjectInfoCommand(ChatHandler* handler, char const* args)
-    {
-        uint32 entry = 0;
-        uint32 type = 0;
-        uint32 displayId = 0;
-        std::string name;
-        uint32 lootId = 0;
-
-        if (!*args)
-        {
-            if (WorldObject* object = handler->getSelectedObject())
-                entry = object->GetEntry();
-            else
-                entry = atoi((char*)args);
-        }
-
-        GameObjectTemplate const* gameObjectInfo = sObjectMgr->GetGameObjectTemplate(entry);
-
-        if (!gameObjectInfo)
-            return false;
-
-        type = gameObjectInfo->type;
-        displayId = gameObjectInfo->displayId;
-        name = gameObjectInfo->name;
-        if (type == GAMEOBJECT_TYPE_CHEST)
-            lootId = gameObjectInfo->chest.lootId;
-        else if (type == GAMEOBJECT_TYPE_FISHINGHOLE)
-            lootId = gameObjectInfo->fishinghole.lootId;
-
-        handler->PSendSysMessage(LANG_GOINFO_ENTRY, entry);
-        handler->PSendSysMessage(LANG_GOINFO_TYPE, type);
-        handler->PSendSysMessage(LANG_GOINFO_LOOTID, lootId);
-        handler->PSendSysMessage(LANG_GOINFO_DISPLAYID, displayId);
-        handler->PSendSysMessage(LANG_GOINFO_NAME, name.c_str());
-
-        return true;
-    }
-
     //set phasemask for selected object
     static bool HandleGameObjectSetPhaseCommand(ChatHandler* handler, char const* args)
     {

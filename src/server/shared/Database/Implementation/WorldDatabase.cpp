@@ -62,4 +62,8 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(WORLD_DEL_CREATURE, "DELETE FROM creature WHERE guid = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(WORLD_SEL_GAMEOBJECT_NEAREST, "SELECT guid, id, position_x, position_y, position_z, map, (POW(position_x - ?, 2) + POW(position_y - ?, 2) + POW(position_z - ?, 2)) AS order_ FROM gameobject WHERE map = ? AND (POW(position_x - ?, 2) + POW(position_y - ?, 2) + POW(position_z - ?, 2)) <= ? ORDER BY order_", CONNECTION_SYNCH);
     PREPARE_STATEMENT(WORLD_SEL_COMMANDS, "SELECT name, security, help FROM command", CONNECTION_SYNCH);
+	PREPARE_STATEMENT(WORLD_INS_GAMEOBJECT, "INSERT INTO gameobject (guid, id, map, spawnMask, phaseMask, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(WORLD_UPD_GAMEOBJECT_MAKETEMP, "UPDATE gameobject SET temp=1 WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(WORLD_INS_DISABLES, "INSERT INTO disables (entry, sourceType, comment) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(WORLD_SEL_DISABLES, "SELECT * FROM disables WHERE entry = ? AND sourceType = ?", CONNECTION_SYNCH);
 }
